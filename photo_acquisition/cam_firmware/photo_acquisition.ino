@@ -58,6 +58,7 @@ void setup()
     config.xclk_freq_hz = 20000000;
     config.pixel_format = PIXFORMAT_JPEG;
 
+    // determine photo quality (based on amount of memory available)
     if (psramFound())
     {
         config.frame_size = FRAMESIZE_UXGA;
@@ -103,7 +104,7 @@ void send_photo(camera_fb_t* fb)
     }
 
     Serial.println("PHOTO_START");  
-    // Serial.write(fb->buf, fb->len);  
+    Serial.write(fb->buf, fb->len);  
     Serial.println("PHOTO_END");
     esp_camera_fb_return(fb);
 }
