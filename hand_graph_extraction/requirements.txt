@@ -1,9 +1,8 @@
-pathlib
-PIL
+pillow
 tqdm
 numpy
 mediapipe==0.10.13
 pandas
 pyarrow
-sklearn
+scikit-learn
 torchvision

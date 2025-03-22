@@ -1,8 +1,10 @@
 import sys
 from pathlib import Path
+
 import pandas as pd
 
-def combine():
+
+def combine() -> None:
     """Combine multiple datasets into one.
     
     Combines multiple datasets of normalized hand landmarks into one

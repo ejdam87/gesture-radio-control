@@ -1,9 +1,12 @@
 import sys
 from pathlib import Path 
+
 import pandas as pd
+
 from constants import LANDMARKS_COUNT
 
-def get_landmarks_list(row):
+
+def get_landmarks_list(row: pd.Series) -> tuple[ list[float], list[float] ]:
     "Extract hand's x and y coordinates from dataframe."
     row = row.filter(regex=r'^[xy]\d')
     xs = [row[i * 2] for i in range(LANDMARKS_COUNT)]
@@ -11,12 +14,14 @@ def get_landmarks_list(row):
 
     return xs, ys
 
-def find_corners(row):
+
+def find_corners(row: pd.Series) -> pd.Series:
     """Find corners of a set of hand's landmarks."""
     xs, ys = get_landmarks_list(row)
     return pd.Series({"x_min": min(xs), "x_max": max(xs), "y_min": min(ys), "y_max": max(ys)})
 
-def rescale_landmarks(row):
+
+def rescale_landmarks(row: pd.Series) -> pd.Series:
     """Scale landmarks to bounding box."""
     xs, ys = get_landmarks_list(row)
     rescaled_landmarks = {}
@@ -26,6 +31,7 @@ def rescale_landmarks(row):
         rescaled_landmarks[f"x{i}"] = x
         rescaled_landmarks[f"y{i}"] = y
     return pd.Series(rescaled_landmarks)
+
 
 def normalize_hand():
     """Normalize hand landmarks.
@@ -38,7 +44,7 @@ def normalize_hand():
     """
     if len(sys.argv) != 3:
         raise ValueError("Enter input and output parquet paths.")
-    
+
     df_path = Path(sys.argv[1])
     rescaled_df_path = Path(sys.argv[2])
     df = pd.read_parquet(df_path)
