@@ -4,8 +4,8 @@ from torch.utils.data import DataLoader
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from dataset import HandDataset
-from model import StupidNet, init_weights
-
+from models.stupid_net import StupidNet, init_weights
+from models.shallow_stupid_net import ShallowStupidNet
 
 def train_loop(
         dataloader: DataLoader,
@@ -52,7 +52,6 @@ def test_loop(
 
 def main(dataset_path: str) -> None:
     dev = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-    dev = torch.device("cpu")
     print(f"Running on {dev} device.")
 
     df = pd.read_parquet(dataset_path)
@@ -68,17 +67,18 @@ def main(dataset_path: str) -> None:
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size)
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size)
 
-    model = StupidNet().to(dev)
-    model.apply(init_weights)
+    # model = StupidNet().to(dev)
+    # model.apply(init_weights)
+    model = ShallowStupidNet().to(dev)
 
     loss_fn = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
     for t in range(epochs):
         print(f"Epoch {t+1}\n-------------------------------")
-        train_loop(train_dataloader, model, loss_fn, optimizer, batch_size, dev)
-        test_loop(test_dataloader, model, loss_fn, dev)
-    print("Done!")    
+        train_loop(train_dataloader, model, loss_fn, optimizer, batch_size)
+        test_loop(test_dataloader, model, loss_fn)
+    print("Done!")
 
 if __name__ == "__main__":
-    main("C:\\Users\\JankoHraskoAKAJovyan\\path\\to\\normalized\\combined\\dataset.parquet")
+    main(r"C:\workspace\git\gesture-radio-control\data\landmarks\hagrid_color\normalized_combined.parquet")
