@@ -1,8 +1,9 @@
 from torch import nn
 import torch
 
+
 class StupidNet(nn.Module):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.linear_relu_stack = nn.Sequential(
             nn.Linear(85, 512),
@@ -12,11 +13,12 @@ class StupidNet(nn.Module):
             nn.Linear(512, 5)
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.tensor) -> torch.tensor:
         logits = self.linear_relu_stack(x).squeeze(1)
         return logits
 
-def init_weights(m):
+
+def init_weights(m: nn.Module) -> None:
     if isinstance(m, nn.Linear):
         if m.out_features == 5:  # Final layer
             nn.init.xavier_uniform_(m.weight)  # Xavier for final layer

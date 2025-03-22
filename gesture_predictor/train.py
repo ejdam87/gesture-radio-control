@@ -6,7 +6,14 @@ from sklearn.model_selection import train_test_split
 from dataset import HandDataset
 from model import StupidNet, init_weights
 
-def train_loop(dataloader, model, loss_fn, optimizer, batch_size, dev):
+
+def train_loop(
+        dataloader: DataLoader,
+        model: nn.Module, 
+        loss_fn: nn.Module,
+        optimizer: torch.optim.Optimizer,
+        batch_size: int) -> None:
+
     size = len(dataloader.dataset)
     model.train()
     for batch, (X, y) in enumerate(dataloader):
@@ -22,7 +29,11 @@ def train_loop(dataloader, model, loss_fn, optimizer, batch_size, dev):
             print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
 
-def test_loop(dataloader, model, loss_fn, dev):
+def test_loop(
+        dataloader: DataLoader,
+        model: nn.Module,
+        loss_fn: nn.Module) -> None:
+
     model.eval()
     size = len(dataloader.dataset)
     num_batches = len(dataloader)
@@ -39,7 +50,7 @@ def test_loop(dataloader, model, loss_fn, dev):
     print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
 
 
-def main(dataset_path):
+def main(dataset_path: str) -> None:
     dev = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     dev = torch.device("cpu")
     print(f"Running on {dev} device.")
@@ -70,4 +81,4 @@ def main(dataset_path):
     print("Done!")    
 
 if __name__ == "__main__":
-    main("C:\\Users\\JankoHraskoAKAJovyan\\path\\to\\normalized\\combined\\dataset.parquet") 
+    main("C:\\Users\\JankoHraskoAKAJovyan\\path\\to\\normalized\\combined\\dataset.parquet")
