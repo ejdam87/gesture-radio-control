@@ -11,12 +11,12 @@ import pandas as pd
 
 
 def process_image(img_path: Path) -> list[Any]:
-    base_options = python.BaseOptions(model_asset_path='models/hand_landmarker.task')
+    base_options = python.BaseOptions(model_asset_path='./hand_graph_extraction/models/hand_landmarker.task')
     options = vision.HandLandmarkerOptions(base_options=base_options,
                                         num_hands=1,
                                         min_hand_presence_confidence=0,
                                         min_tracking_confidence=0,
-                                        min_hand_detection_confidence=0.8)
+                                        min_hand_detection_confidence=0.1)
     detector = vision.HandLandmarker.create_from_options(options)
 
     img = mp.Image.create_from_file(str(img_path))
@@ -36,7 +36,7 @@ def process_image(img_path: Path) -> list[Any]:
 def get_landmarks() -> None:
     """Extract hand graph from images in a directory.
 
-    Example usage: python ./extract_from_dataset.py directory ./output_dataframe.parquet
+    Example usage: python ./get_hand_graph.py directory ./output_dataframe.parquet
     """
     if len(sys.argv) != 3:
         raise ValueError("Specify input and output paths!")
