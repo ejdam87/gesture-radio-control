@@ -9,8 +9,8 @@ from constants import LANDMARKS_COUNT
 def get_landmarks_list(row: pd.Series) -> tuple[ list[float], list[float] ]:
     "Extract hand's x and y coordinates from dataframe."
     row = row.filter(regex=r'^[xy]\d')
-    xs = [row[i * 2] for i in range(LANDMARKS_COUNT)]
-    ys = [row[i * 2 + 1] for i in range(LANDMARKS_COUNT)]
+    xs = [row.iloc[i * 2] for i in range(LANDMARKS_COUNT)]
+    ys = [row.iloc[i * 2 + 1] for i in range(LANDMARKS_COUNT)]
 
     return xs, ys
 
