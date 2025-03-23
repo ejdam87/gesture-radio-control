@@ -81,4 +81,4 @@ def main(dataset_path: str) -> None:
     print("Done!")
 
 if __name__ == "__main__":
-    main(r"C:\workspace\git\gesture-radio-control\data\landmarks\hagrid_color\normalized_combined.parquet")
+    main(r"path/to/combined/landmarks.parquet")

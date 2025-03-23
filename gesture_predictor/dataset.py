@@ -14,7 +14,6 @@ class HandDataset():
 
     def __getitem__(self, index: int) -> tuple[torch.tensor, torch.tensor]:
         sample = self.samples_df.iloc[index]
-
         label = torch.tensor(sample["label"]).to(self.dev)
 
         landmarks = sample.filter(regex=r'^[xyzc]\d|hand')
