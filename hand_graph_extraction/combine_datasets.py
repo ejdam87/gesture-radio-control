@@ -3,6 +3,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from hand_graph_extraction.constants import LABELS
+
 
 def combine() -> None:
     """Combine multiple datasets into one.
@@ -17,9 +19,12 @@ def combine() -> None:
 
     out_df = pd.read_parquet(Path(sys.argv[1]))
     out_df["label"] = 0
-    for i in range(2, len(sys.argv) - 1):
-        df = pd.read_parquet(Path(sys.argv[i]))
-        df["label"] = i - 1
+    for i in range(1, len(sys.argv) - 1):
+        path = Path(sys.argv[i])
+        gesture = "_".join( token for token in path.stem.split("_")[1:] ) # assuming file name like ".../xxxx_gesture_name.parquet"
+
+        df = pd.read_parquet(path)
+        df["label"] = LABELS[gesture]
         out_df = pd.concat([out_df, df], ignore_index=True)
 
     out_df.to_parquet(Path(sys.argv[-1]))
