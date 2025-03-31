@@ -1,21 +1,25 @@
 import sys
+import json
 from pathlib import Path
 
 import pandas as pd
 
-from hand_graph_extraction.constants import LABELS
+
+LABELS_PATH = "data/label_dict.json"
 
 
 def combine() -> None:
     """Combine multiple datasets into one.
     
-    Combines multiple datasets of normalized hand landmarks into one
-    and labels them based on the order on the command line.
+    Combines multiple datasets of normalized hand landmarks into one.
     
     Example usage: python ./combine_datasets.py ./dataset1.parquet ./dataset2.parquet ... ./combined_output.parquet
     """
     if len(sys.argv) < 2:
         raise ValueError("Specify at least one input parquet file. Last one is output.")
+
+    with open(LABELS_PATH, "r") as f:
+        labels = json.load(f)["labels"]
 
     out_df = pd.read_parquet(Path(sys.argv[1]))
     out_df["label"] = 0
@@ -24,7 +28,7 @@ def combine() -> None:
         gesture = "_".join( token for token in path.stem.split("_")[1:] ) # assuming file name like ".../xxxx_gesture_name.parquet"
 
         df = pd.read_parquet(path)
-        df["label"] = LABELS[gesture]
+        df["label"] = labels[gesture]
         out_df = pd.concat([out_df, df], ignore_index=True)
 
     out_df.to_parquet(Path(sys.argv[-1]))
