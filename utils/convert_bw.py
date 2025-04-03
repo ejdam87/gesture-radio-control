@@ -10,6 +10,7 @@ def convert_to_bw() -> None:
         raise ValueError("Specify input and output paths!")
     path = Path(sys.argv[1])
     out = Path(sys.argv[2])
+    out.mkdir(parents=True, exist_ok=True)
     img_paths = list(path.glob("*"))
 
     for img_path in tqdm(img_paths, total=len(img_paths)):
