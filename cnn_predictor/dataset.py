@@ -1,5 +1,4 @@
 import torch
-import pandas as pd
 from torchvision.transforms import v2
 from PIL import Image
 
@@ -9,8 +8,8 @@ class ImageDataset():
 
     def __init__(
             self,
-            images: pd.Series,
-            labels: pd.Series,
+            images: list[str],
+            labels: list[int],
             dev: torch.device,
             transforms: v2.Compose | None = None
         ) -> None:
@@ -24,8 +23,8 @@ class ImageDataset():
         return len(self.images)
 
     def __getitem__(self, index: int) -> tuple[torch.tensor, torch.tensor]:
-        im_path = self.images.iloc[index]
-        label = self.labels.iloc[index]
+        im_path = self.images[index]
+        label = self.labels[index]
         im = Image.open(im_path)
         im_tensor = self.transforms(im)
 

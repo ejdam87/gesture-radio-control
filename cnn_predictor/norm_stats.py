@@ -3,11 +3,8 @@ from cnn_predictor.dataset import ImageDataset
 import torch
 from torchvision.transforms import v2
 
-import sys
-from pathlib import Path
 
-
-def compute_norm_stats(images: list[Path]) -> tuple[torch.tensor, torch.tensor]:
+def compute_norm_stats(images: list[str]) -> tuple[torch.tensor, torch.tensor]:
     dummy = [-1 for _ in range(len(images))]
     transforms = v2.Compose(
         [
@@ -28,25 +25,3 @@ def compute_norm_stats(images: list[Path]) -> tuple[torch.tensor, torch.tensor]:
     mean = torch.stack(means).mean(0)
     std = torch.stack(stds).mean(0)
     return mean, std
-
-
-def main() -> None:
-    """
-    Computed mean and std for normalization for images from given folders.
-
-    Example usage:
-        python -m cnn_predictor.norm_stats path/to/ims1 path/to/ims2 ...
-    """
-
-    if len(sys.argv) < 2:
-        raise ValueError("Needs at least 1 input path!")
-
-    image_paths = []
-    for folder in sys.argv[1:]:
-        fold_path = Path(folder)
-        image_paths.extend( list(fold_path.glob("*")) )
-    
-    print( compute_norm_stats(image_paths) )
-
-if __name__ == "__main__":
-    main()
