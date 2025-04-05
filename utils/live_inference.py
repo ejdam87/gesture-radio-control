@@ -1,8 +1,9 @@
-import cv2
-import torch
 import time
 import json
 import sys
+
+import cv2
+import torch
 from torchvision.transforms import v2
 from torchsummary import summary
 

@@ -3,3 +3,6 @@ numpy
 pillow
 tqdm
 albumentations
+torchsummary
+torchvision
+cv2
