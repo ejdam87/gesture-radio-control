@@ -3,3 +3,4 @@ torchvision
 pillow
 scikit-learn
 matplotlib
+imbalanced-learn

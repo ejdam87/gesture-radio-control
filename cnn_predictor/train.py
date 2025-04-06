@@ -4,9 +4,12 @@ from torch import nn
 from torchvision.transforms import v2
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
+from imblearn.over_sampling import RandomOverSampler
 
 from utils.training import train_loop, test_loop
 from utils.persistency import save_model
+from utils.constants import LABELS_ALL_PATH
+
 from cnn_predictor.dataset import ImageDataset
 from cnn_predictor.models import GestureCNN, ResNet18, Classifier
 from cnn_predictor.norm_stats import compute_norm_stats
@@ -22,13 +25,34 @@ def perform_training(images_df: pd.DataFrame, out_path: str) -> None:
     print("Using device", dev)
 
     # --- Hyper-params
-    batch_size = 8
-    epochs = 7
+    batch_size = 16
+    epochs = 4
     lr = 0.0001
     # ---
 
+    # --- Data balancing (without no_gesture)
+    with open(LABELS_ALL_PATH, "r") as f:
+        label_dict = json.load(f)["labels"]
+
+    no_gesture = images_df[ images_df[ "labels" ] == label_dict["no_gesture"] ]
+    rest = images_df[ images_df[ "labels" ] != label_dict["no_gesture"] ]
+    X = rest[["paths"]]
+    y = rest["labels"]
+
+    ros = RandomOverSampler(random_state=42)
+
+    X_resampled, y_resampled = ros.fit_resample(X, y)
+    rest = pd.concat(
+        [pd.DataFrame(X_resampled, columns=X.columns), pd.Series(y_resampled, name="labels")],
+        axis=1
+    )
+
+    images_df = pd.concat( [no_gesture, rest], axis=0 )
+    # ---
+    print(images_df["labels"].value_counts())
+
     # --- Data handling
-    train, val = train_test_split(images_df, test_size=0.1)
+    train, val = train_test_split(images_df, test_size=0.1, stratify=images_df["labels"])
     print("Number of train images", len(train))
     print("Number of validation images", len(val))
 
@@ -57,7 +81,7 @@ def perform_training(images_df: pd.DataFrame, out_path: str) -> None:
     # ---
 
     # --- Training
-    model = GestureCNN( ResNet18(), Classifier(5) ).to(dev)
+    model = GestureCNN( ResNet18(), Classifier(14) ).to(dev)
 
     loss_fn = nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)

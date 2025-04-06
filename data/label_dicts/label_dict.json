@@ -1,0 +1,19 @@
+{
+    "labels":
+    {
+        "rock"      : 0,
+        "like"      : 1,
+        "peace_inv" : 2,
+        "ok"        : 3,
+        "no_gesture": 4
+    },
+
+    "inv_labels":
+    {
+        "0" : "rock",
+        "1" : "like",
+        "2" : "peace_inv",
+        "3" : "ok",
+        "4" : "no_gesture"
+    }
+}

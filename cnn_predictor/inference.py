@@ -8,12 +8,12 @@ from PIL import Image
 
 from utils.persistency import load_model
 from cnn_predictor.models import Classifier, ResNet18, GestureCNN
-from utils.constants import LABELS_PATH
+from utils.constants import LABELS_ALL_PATH
 from torchvision.transforms import v2
 
 
 def run_model(model_path: str, stats_path: str, im_path: str) -> int:
-    model = GestureCNN(ResNet18(), Classifier(5))
+    model = GestureCNN(ResNet18(), Classifier(14))
     load_model(model, model_path)
     model.eval()
 
@@ -39,7 +39,7 @@ def run_model(model_path: str, stats_path: str, im_path: str) -> int:
 
 def visualize(im_path: str, pred: int) -> None:
 
-    with open(LABELS_PATH, "r") as f:
+    with open(LABELS_ALL_PATH, "r") as f:
         label_dict = json.load(f)["inv_labels"]
 
     im = Image.open(im_path)

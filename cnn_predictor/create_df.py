@@ -24,8 +24,9 @@ def main() -> None:
     for folder in sys.argv[1:-1]:
         folder_path = Path(folder)
 
-        # assuming the folder with respective images is called as the label of a gesture
-        label = label_dict[folder_path.name]
+        # all non-desired gestures are in clas 'no_gesture'
+        key = folder_path.name if folder_path.name in label_dict else "no_gesture"
+        label = label_dict[key]
 
         for im_path in folder_path.glob("*"):
             image_paths.append(im_path)
