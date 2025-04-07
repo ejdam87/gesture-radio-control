@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 
 
-LABELS_PATH = "data/label_dict.json"
+LABELS_PATH = "data/label_dicts/label_dict_all.json"
 
 
 def combine() -> None:

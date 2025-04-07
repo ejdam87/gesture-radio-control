@@ -3,14 +3,14 @@ import torch
 
 
 class StupidNet(nn.Module):
-    def __init__(self) -> None:
+    def __init__(self, num_classes: int) -> None:
         super().__init__()
         self.linear_relu_stack = nn.Sequential(
             nn.Linear(85, 512),
             nn.ReLU(),
             nn.Linear(512, 512),
             nn.ReLU(),
-            nn.Linear(512, 5)
+            nn.Linear(512, num_classes)
         )
 
     def forward(self, x: torch.tensor) -> torch.tensor:
