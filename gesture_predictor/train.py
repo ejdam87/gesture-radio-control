@@ -6,10 +6,13 @@ from sklearn.model_selection import train_test_split
 
 from gesture_predictor.dataset import HandDataset
 from gesture_predictor.models.stupid_net import StupidNet, init_weights
+from utils.persistency import save_model
 from utils.training import train_loop, test_loop
 
+from pathlib import Path
 
-def main(data_path: str) -> None:
+
+def main(data_path: str, out_path: str) -> None:
     dev = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     print(f"Running on {dev} device.")
 
@@ -46,7 +49,17 @@ def main(data_path: str) -> None:
         test_loop(val_dataloader, model, loss_fn)
     print("Done!")
 
+    # --- Persistency
+    dest = Path(out_path)
+    dest.mkdir(parents=True, exist_ok=True)
+
+    print("Saving model to", dest / Path("mediapipe_model.pth"))
+    save_model(model, str(dest / Path("mediapipe_model.pth")))
+    print("Saved!")
+    # ---
+
 if __name__ == "__main__":
     main(
-        r"data\dfs\mediapipe\mediapipe_all_df.parquet"
+        r"data\dfs\mediapipe\mediapipe_all_df.parquet",
+        "gesture_predictor/outputs"
     )

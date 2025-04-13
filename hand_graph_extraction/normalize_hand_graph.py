@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from constants import LANDMARKS_COUNT
+from hand_graph_extraction.constants import LANDMARKS_COUNT
 
 
 def get_landmarks_list(row: pd.Series) -> tuple[ list[float], list[float] ]:

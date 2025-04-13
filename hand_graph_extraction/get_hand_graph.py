@@ -10,7 +10,11 @@ from mediapipe.tasks.python import vision
 import pandas as pd
 
 
-def process_image(img_path: Path) -> list[Any]:
+def process_image_from_path(img_path: Path) -> list[Any]:
+    img = mp.Image.create_from_file(str(img_path))
+    return process_image(img)
+
+def process_image(img: mp.Image, img_path: Path | None=None) -> list[Any]:
     base_options = python.BaseOptions(model_asset_path='./hand_graph_extraction/models/hand_landmarker.task')
     options = vision.HandLandmarkerOptions(base_options=base_options,
                                         num_hands=1,
@@ -18,15 +22,13 @@ def process_image(img_path: Path) -> list[Any]:
                                         min_tracking_confidence=0,
                                         min_hand_detection_confidence=0.1)
     detector = vision.HandLandmarker.create_from_options(options)
-
-    img = mp.Image.create_from_file(str(img_path))
     results = detector.detect(img)
 
     if results.hand_landmarks:
         hand = 0 if results.handedness[0][0].category_name == "Left" else 1
         for i, hand_landmarks in enumerate(results.hand_landmarks):
             confidence = results.hand_world_landmarks[i][0].z
-            row = [str(img_path.name), hand]
+            row = [str(img_path.name) if img_path else "", hand]
 
             for item in hand_landmarks:
                 row.extend([item.x, item.y, item.z, confidence])
@@ -46,7 +48,7 @@ def get_landmarks() -> None:
     img_paths = list(path.glob("*"))
 
     with Pool(processes=2) as pool:  # Adjust based on CPU cores
-        results = list(tqdm(pool.imap(process_image, img_paths), total=len(img_paths)))
+        results = list(tqdm(pool.imap(process_image_from_path, img_paths), total=len(img_paths)))
 
     results = [x for x in results if x is not None]
 
