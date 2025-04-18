@@ -8,7 +8,7 @@ from torchvision.transforms import v2
 from torchsummary import summary
 
 from cnn_predictor.models.classifier import Classifier
-from cnn_predictor.models.feature_extractor import ResNet18
+from cnn_predictor.models.feature_extractor import ResNet18, CustomExtractor
 from cnn_predictor.models.gesture_cnn import GestureCNN
 from utils.persistency import load_model
 
@@ -17,11 +17,11 @@ FONT = cv2.FONT_HERSHEY_SIMPLEX
 def run(source, model_path, stats_path, labels_path, device) -> None:
     cap = cv2.VideoCapture(source)
     t1 = frame_cnt = 0
-    model = GestureCNN(ResNet18(), Classifier(512, 14))
+    model = GestureCNN(CustomExtractor(1), Classifier(128, 14))
     load_model(model, model_path)
     model = model.to(device)
     model.eval()
-    summary(model, (3,320,240))
+    summary(model, (1,320,240))
 
     with open(stats_path, "r") as f:
         stats = json.load(f)
@@ -45,9 +45,7 @@ def run(source, model_path, stats_path, labels_path, device) -> None:
 
         ret, frame = cap.read()
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        gray_rgb = cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB)
-        frame = gray_rgb
-
+        frame = gray
         if ret:
 
             im = transforms(frame)
@@ -59,7 +57,7 @@ def run(source, model_path, stats_path, labels_path, device) -> None:
             cv2.putText(
                 frame, labels[str(class_id)], (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), thickness=3
             )
-            fps = 1 / delta
+            fps = 1 / (delta + 0.000001)
             frame_cnt += 1
             cv2.putText(frame, f"FPS: {fps :02.1f}, Frame: {frame_cnt}", (30, 30), FONT, 1, (255, 0, 255), 2)
 

@@ -11,7 +11,7 @@ from utils.persistency import save_model
 from utils.constants import LABELS_ALL_PATH
 
 from cnn_predictor.dataset import ImageDataset
-from cnn_predictor.models import GestureCNN, ResNet18, Classifier, EfficientNet
+from cnn_predictor.models import GestureCNN, ResNet18, Classifier, EfficientNet, CustomExtractor
 from cnn_predictor.norm_stats import compute_norm_stats
 
 import sys
@@ -26,8 +26,8 @@ def perform_training(images_df: pd.DataFrame, out_path: str) -> None:
 
     # --- Hyper-params
     batch_size = 16
-    epochs = 1
-    lr = 0.0001
+    epochs = 80
+    lr = 0.001
     # ---
 
     # --- Data balancing (without no_gesture)
@@ -81,7 +81,7 @@ def perform_training(images_df: pd.DataFrame, out_path: str) -> None:
     # ---
 
     # --- Training
-    model = GestureCNN( ResNet18(), Classifier(512, 14) ).to(dev)
+    model = GestureCNN( CustomExtractor(1), Classifier(128, 14) ).to(dev)
 
     loss_fn = nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
