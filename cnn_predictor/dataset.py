@@ -26,6 +26,7 @@ class ImageDataset():
         im_path = self.images[index]
         label = self.labels[index]
         im = Image.open(im_path)
+        im = im.convert("RGB")
         im_tensor = self.transforms(im)
 
         return im_tensor.to(self.dev), torch.tensor(label).to(self.dev)

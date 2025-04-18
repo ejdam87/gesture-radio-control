@@ -4,7 +4,7 @@ import json
 import sys
 from pathlib import Path
 
-from utils.constants import LABELS_PATH
+from utils.constants import LABELS_PATH, LABELS_ALL_PATH
 
 
 def main() -> None:
@@ -15,7 +15,7 @@ def main() -> None:
         python cnn_predictor/create_df.py path/to/image/folder1 path/to/image/folder2 ... out/path.csv
     """
 
-    with open(LABELS_PATH, "r") as f:
+    with open(LABELS_ALL_PATH, "r") as f:
         label_dict = json.load(f)["labels"]
 
     image_paths = []
