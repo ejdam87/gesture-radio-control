@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import mediapipe as mp
 
-from hand_graph_extraction.get_hand_graph import process_image
+from hand_graph_extraction.get_hand_graph import get_detector, process_image_with_detector
 from hand_graph_extraction.normalize_hand_graph import rescale_landmarks, find_corners
 from hand_graph_extraction.constants import LANDMARKS_COUNT
 
@@ -26,8 +26,8 @@ def get_model(model_path: str, device) -> torch.nn.Module:
     return model
 
 
-def get_pred(model: torch.nn.Module, im: mp.Image, device) -> int:
-    raw_landmarks = process_image(im)
+def get_pred(model: torch.nn.Module, im: mp.Image, device, detector) -> int:
+    raw_landmarks = process_image_with_detector(im, detector)
     if not raw_landmarks:
         return 5
 
@@ -49,6 +49,8 @@ def get_pred(model: torch.nn.Module, im: mp.Image, device) -> int:
 def run(source, model_path, labels_path, device) -> None:
     cap = cv2.VideoCapture(source)
     t1 = frame_cnt = 0
+
+    detector = get_detector()
     model = get_model(model_path, device)
 
     with open(labels_path, "r") as f:
@@ -61,9 +63,11 @@ def run(source, model_path, labels_path, device) -> None:
         ret, frame = cap.read()
         if ret:
 
-            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            frame_rgb = cv2.cvtColor(frame_gray, cv2.COLOR_GRAY2RGB)
+            frame = frame_rgb
             im = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame_rgb)
-            class_id = get_pred(model, im, device)
+            class_id = get_pred(model, im, device, detector)
 
             cv2.putText(
                 frame, labels[str(class_id)], (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), thickness=3

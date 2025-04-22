@@ -14,14 +14,8 @@ def process_image_from_path(img_path: Path) -> list[Any]:
     img = mp.Image.create_from_file(str(img_path))
     return process_image(img)
 
-def process_image(img: mp.Image, img_path: Path | None=None) -> list[Any]:
-    base_options = python.BaseOptions(model_asset_path='./hand_graph_extraction/models/hand_landmarker.task')
-    options = vision.HandLandmarkerOptions(base_options=base_options,
-                                        num_hands=1,
-                                        min_hand_presence_confidence=0,
-                                        min_tracking_confidence=0,
-                                        min_hand_detection_confidence=0.1)
-    detector = vision.HandLandmarker.create_from_options(options)
+
+def process_image_with_detector(img: mp.Image, detector: Any, img_path: Path | None=None) -> list[Any]:
     results = detector.detect(img)
 
     if results.hand_landmarks:
@@ -33,6 +27,22 @@ def process_image(img: mp.Image, img_path: Path | None=None) -> list[Any]:
             for item in hand_landmarks:
                 row.extend([item.x, item.y, item.z, confidence])
         return row
+
+
+def get_detector() -> Any:
+    base_options = python.BaseOptions(model_asset_path='./hand_graph_extraction/models/hand_landmarker.task')
+    options = vision.HandLandmarkerOptions(base_options=base_options,
+                                        num_hands=1,
+                                        min_hand_presence_confidence=0,
+                                        min_tracking_confidence=0,
+                                        min_hand_detection_confidence=0.1)
+    detector = vision.HandLandmarker.create_from_options(options)
+    return detector
+
+
+def process_image(img: mp.Image, img_path: Path | None=None) -> list[Any]:
+    detector = get_detector()
+    return process_image_with_detector(img, img_path, detector)
 
 
 def get_landmarks() -> None:
