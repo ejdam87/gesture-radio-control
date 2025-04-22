@@ -14,4 +14,4 @@ def load_model(model: torch.nn.Module, path: str) -> None:
     instance of the same model has to be passed in <model> argument. This function then
     fills the model with the learned parameter values.
     """
-    model.load_state_dict(torch.load(path, weights_only=True))
+    model.load_state_dict(torch.load(path, weights_only=True, map_location=torch.device("cpu")))
