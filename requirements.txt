@@ -1,0 +1,15 @@
+torch
+numpy
+pandas
+pillow
+pyarrow
+scikit-learn
+tqdm
+albumentations
+torchsummary
+torchvision
+cv2
+pyserial
+mediapipe==0.10.13
+imbalanced-learn
+matplotlib
