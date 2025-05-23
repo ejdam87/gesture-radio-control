@@ -10,6 +10,8 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import pandas as pd
 
+from utils.constants import DETECTOR_PATH
+
 
 def process_image_from_path(img_path: Path) -> list[Any]:
     img = mp.Image.create_from_file(str(img_path))
@@ -31,7 +33,7 @@ def process_image_with_detector(img: mp.Image, detector: Any, img_path: Path | N
 
 
 def get_detector() -> Any:
-    base_options = python.BaseOptions(model_asset_path='./hand_graph_extraction/models/hand_landmarker.task')
+    base_options = python.BaseOptions(model_asset_path=DETECTOR_PATH)
     options = vision.HandLandmarkerOptions(base_options=base_options,
                                         num_hands=1,
                                         min_hand_presence_confidence=0,
