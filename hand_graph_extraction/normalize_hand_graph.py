@@ -1,3 +1,4 @@
+""" Hand landmarks normalization. """
 import sys
 from pathlib import Path 
 

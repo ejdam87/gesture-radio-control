@@ -1,3 +1,4 @@
+""" Visualization of the hand graphs. """
 import sys
 import cv2
 from pathlib import Path
