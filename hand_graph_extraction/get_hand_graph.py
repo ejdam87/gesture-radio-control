@@ -8,6 +8,7 @@ from tqdm import tqdm
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
+from mediapipe.tasks.python.vision.hand_landmarker import HandLandmarker
 import pandas as pd
 
 from utils.constants import DETECTOR_PATH
@@ -32,7 +33,7 @@ def process_image_with_detector(img: mp.Image, detector: Any, img_path: Path | N
         return row
 
 
-def get_detector() -> Any:
+def get_detector() -> HandLandmarker:
     base_options = python.BaseOptions(model_asset_path=DETECTOR_PATH)
     options = vision.HandLandmarkerOptions(base_options=base_options,
                                         num_hands=1,

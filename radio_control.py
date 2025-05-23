@@ -2,12 +2,15 @@
 import time
 import json
 import sys
-import spidev
+from typing import Any
 
 import cv2
 import torch
 from torchvision.transforms import v2
-from picamera2 import Picamera2
+
+# uncomment when on raspberry
+# from picamera2 import Picamera2
+# import spidev
 
 from cnn_predictor.inference import cnn_model, cnn_pred
 from mediapipe_predictor.inference import mediapipe_model, mediapipe_pred
@@ -17,10 +20,11 @@ from hand_graph_extraction.get_hand_graph import get_detector
 
 FONT = cv2.FONT_HERSHEY_SIMPLEX
 MEDIAPIPE = True # whether to run mediapipe or CNN (False means CNN)
-PICAM_SOURCE = True # where to get video from (Picam -> True, Video file -> False)
+PICAM_SOURCE = False # where to get video from (Picam -> True, Video file -> False)
+GRAYSCALE = True # grayscale inference ?
 
 
-def set_resistor_remote(spi: spidev.SpiDev, value: int) -> None:
+def set_resistor_remote(spi: Any, value: int) -> None:
     if not (0 <= value <= 255):
         raise ValueError("Value must be 0-255")
     command = [0x11, value]  # MCP41100: write to pot0
@@ -33,7 +37,7 @@ def run(
     ) -> None:
 
     t1 = frame_cnt = 0
-    model = mediapipe_model(model_path) if MEDIAPIPE else cnn_model(model_path)
+    model = mediapipe_model(model_path, device) if MEDIAPIPE else cnn_model(model_path, device)
     if MEDIAPIPE:
         detector = get_detector()
 
@@ -51,16 +55,17 @@ def run(
             ]
         )
 
-    # Initialize SPI
-    spi = spidev.SpiDev()
-    spi.open(0, 0)  # Bus 0, Device 0 (CE0 = GPIO8)
-    spi.max_speed_hz = 1000000  # 1 MHz
+    # # Initialize SPI
+    # spi = spidev.SpiDev()
+    # spi.open(0, 0)  # Bus 0, Device 0 (CE0 = GPIO8)
+    # spi.max_speed_hz = 1000000  # 1 MHz
 
     if PICAM_SOURCE:
         # Initialize camera
-        picam2 = Picamera2()
-        picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
-        picam2.start()
+        # picam2 = Picamera2()
+        # picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
+        # picam2.start()
+        ...
     else:
         # if classifying the video
         cap = cv2.VideoCapture(source)
@@ -101,23 +106,28 @@ def run(
         t1 = time.time()
 
         if PICAM_SOURCE:
-            frame = picam2.capture_array()
+            # frame = picam2.capture_array()
+            ...
         else:
             _, frame = cap.read()
-
-        # frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        # frame_rgb = cv2.cvtColor(frame_gray, cv2.COLOR_GRAY2RGB)
+            if GRAYSCALE:
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
+            else:
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         class_id = mediapipe_pred(model, frame, device, detector) if MEDIAPIPE else cnn_pred(model, frame, transforms, device)
-
         # Most common gesture over last 10 detections (~1.4 seconds to recognize a gesture)
         last_gestures.append(class_id)
         if len(last_gestures) == 10:
             most_common_class = max(set(last_gestures), key=last_gestures.count)
+            if most_common_class not in commands:
+                continue
             # Goes through the whole mapping path - just for demonstration purposes,
             # mapping class ids directly to resistance values is of course more streamlined
             resistance = commands[gestures_mapping[labels[str(class_id)]]]
-            set_resistor_remote(spi, resistance)
+            # set_resistor_remote(spi, resistance)
+            print("resistance set:", resistance)
             last_gestures = []
 
         cv2.putText(
@@ -131,7 +141,7 @@ def run(
 
         key = cv2.waitKey(1)
         if key == ord("q"):
-            spi.close()
+            # spi.close()
             return
 
 

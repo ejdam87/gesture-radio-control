@@ -9,6 +9,7 @@ from utils.persistency import load_model
 from utils.pred_vis import visualize
 
 from numpy.typing import NDArray
+from mediapipe.tasks.python.vision.hand_landmarker import HandLandmarker
 import torch
 import mediapipe as mp
 import pandas as pd
@@ -24,7 +25,7 @@ def mediapipe_model(model_path: str, device: torch.device) -> torch.nn.Module:
     model.eval()
     return model
 
-def mediapipe_pred(model: torch.nn.Module, frame: NDArray, device: torch.device, detector) -> int:
+def mediapipe_pred(model: torch.nn.Module, frame: NDArray, device: torch.device, detector: HandLandmarker) -> int:
     im = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame)
     raw_landmarks = process_image_with_detector(im, detector)
     if not raw_landmarks:

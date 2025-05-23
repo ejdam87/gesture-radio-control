@@ -13,5 +13,5 @@ pyserial
 mediapipe==0.10.13
 imbalanced-learn
 matplotlib
-picamera2
-spidev
+# picamera2 only on raspberry
+# spidev only on raspberry
