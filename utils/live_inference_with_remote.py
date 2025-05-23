@@ -7,15 +7,17 @@ import spidev
 import cv2
 import torch
 from torchvision.transforms import v2
-from torchsummary import summary
 from picamera2 import Picamera2
 
-from cnn_predictor.models.classifier import Classifier
-from cnn_predictor.models.feature_extractor import ResNet18
-from cnn_predictor.models.gesture_cnn import GestureCNN
-from utils.persistency import load_model
+from cnn_predictor.inference import cnn_model, cnn_pred
+from mediapipe_predictor.inference import mediapipe_model, mediapipe_pred
+
+from hand_graph_extraction.get_hand_graph import get_detector
+
 
 FONT = cv2.FONT_HERSHEY_SIMPLEX
+MEDIAPIPE = True # whether to run mediapipe or CNN (False means CNN)
+PICAM_SOURCE = True # where to get video from (Picam -> True, Video file -> False)
 
 
 def set_resistor_remote(spi: spidev.SpiDev, value: int) -> None:
@@ -30,39 +32,40 @@ def run(
         labels_path: str, device: torch.device
     ) -> None:
 
-    # if classifying the video
-    cap = cv2.VideoCapture(source)
-
     t1 = frame_cnt = 0
-    model = GestureCNN(ResNet18(), Classifier(14))
-    load_model(model, model_path)
-    model = model.to(device)
-    model.eval()
-    summary(model, (3,640,480))
+    model = mediapipe_model(model_path) if MEDIAPIPE else cnn_model(model_path)
+    if MEDIAPIPE:
+        detector = get_detector()
 
-    with open(stats_path, "r") as f:
-        stats = json.load(f)
-        means = stats["means"]
-        stds = stats["stds"]
+    if not MEDIAPIPE:
+        with open(stats_path, "r") as f:
+            stats = json.load(f)
+            means = stats["means"]
+            stds = stats["stds"]
 
-    transforms = v2.Compose(
-        [
-            v2.ToImage(),
-            v2.ToDtype(torch.float32, scale=True),
-            v2.Normalize(mean=means, std=stds)
-        ]
-    )
+        transforms = v2.Compose(
+            [
+                v2.ToImage(),
+                v2.ToDtype(torch.float32, scale=True),
+                v2.Normalize(mean=means, std=stds)
+            ]
+        )
 
     # Initialize SPI
     spi = spidev.SpiDev()
     spi.open(0, 0)  # Bus 0, Device 0 (CE0 = GPIO8)
     spi.max_speed_hz = 1000000  # 1 MHz
 
-    # Initialize camera
-    picam2 = Picamera2()
-    picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
-    picam2.start()
+    if PICAM_SOURCE:
+        # Initialize camera
+        picam2 = Picamera2()
+        picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
+        picam2.start()
+    else:
+        # if classifying the video
+        cap = cv2.VideoCapture(source)
 
+    # --- Radio commands mappings
     commands = {
         "source/off": 3, # 1.2kΩ
         "att/mute": 8, # 3.3kΩ
@@ -86,6 +89,7 @@ def run(
         "one": "band/escape",
         "no_gesture": "no_command"
     }
+    # ---
 
     last_gestures = []
 
@@ -96,13 +100,15 @@ def run(
         delta = time.time() - t1
         t1 = time.time()
 
-        frame = picam2.capture_array()
+        if PICAM_SOURCE:
+            frame = picam2.capture_array()
+        else:
+            _, frame = cap.read()
 
-        im = transforms(frame)
-        with torch.no_grad():
-            pred = model(im.unsqueeze(0).to(device))
+        # frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        # frame_rgb = cv2.cvtColor(frame_gray, cv2.COLOR_GRAY2RGB)
 
-        class_id = pred.argmax(1).item()
+        class_id = mediapipe_pred(model, frame, device, detector) if MEDIAPIPE else cnn_pred(model, frame, transforms, device)
 
         # Most common gesture over last 10 detections (~1.4 seconds to recognize a gesture)
         last_gestures.append(class_id)
@@ -132,7 +138,7 @@ def run(
 if __name__ == "__main__":
     source = sys.argv[1]
     model = sys.argv[2]
-    stats = sys.argv[3]
+    stats = sys.argv[3] # if not present, pass ""
     labels = sys.argv[4]
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     run(source, model, stats, labels, device)

@@ -8,7 +8,7 @@ tqdm
 albumentations
 torchsummary
 torchvision
-cv2
+opencv-python
 pyserial
 mediapipe==0.10.13
 imbalanced-learn
