@@ -13,3 +13,5 @@ pyserial
 mediapipe==0.10.13
 imbalanced-learn
 matplotlib
+picamera2
+spidev

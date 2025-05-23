@@ -1,3 +1,4 @@
+""" Radio control (designed for raspberry device). """
 import time
 import json
 import sys
@@ -16,14 +17,22 @@ from utils.persistency import load_model
 
 FONT = cv2.FONT_HERSHEY_SIMPLEX
 
-def set_resistor_remote(value):
+
+def set_resistor_remote(spi: spidev.SpiDev, value: int) -> None:
     if not (0 <= value <= 255):
         raise ValueError("Value must be 0-255")
     command = [0x11, value]  # MCP41100: write to pot0
     spi.xfer2(command)
 
-def run(source, model_path, stats_path, labels_path, device) -> None:
+
+def run(
+        source: str, model_path: str, stats_path: str,
+        labels_path: str, device: torch.device
+    ) -> None:
+
+    # if classifying the video
     cap = cv2.VideoCapture(source)
+
     t1 = frame_cnt = 0
     model = GestureCNN(ResNet18(), Classifier(14))
     load_model(model, model_path)
@@ -102,7 +111,7 @@ def run(source, model_path, stats_path, labels_path, device) -> None:
             # Goes through the whole mapping path - just for demonstration purposes,
             # mapping class ids directly to resistance values is of course more streamlined
             resistance = commands[gestures_mapping[labels[str(class_id)]]]
-            set_resistor_remote(resistance)
+            set_resistor_remote(spi, resistance)
             last_gestures = []
 
         cv2.putText(
@@ -118,6 +127,7 @@ def run(source, model_path, stats_path, labels_path, device) -> None:
         if key == ord("q"):
             spi.close()
             return
+
 
 if __name__ == "__main__":
     source = sys.argv[1]

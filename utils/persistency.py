@@ -1,3 +1,4 @@
+""" Persistency of the torch models. """
 import torch
 
 

@@ -1,3 +1,4 @@
+""" Conversion from RGB to Grayscale. """
 import sys
 from pathlib import Path
 

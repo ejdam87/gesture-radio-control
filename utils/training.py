@@ -1,3 +1,4 @@
+""" Common functionality for training the models. """
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
