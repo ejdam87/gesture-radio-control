@@ -1,3 +1,4 @@
+""" Estimate mean and std. dev. of our dataset """
 from cnn_predictor.dataset import ImageDataset
 
 import torch

@@ -4,7 +4,7 @@ import json
 import sys
 from pathlib import Path
 
-from utils.constants import LABELS_PATH, LABELS_ALL_PATH
+from utils.constants import LABELS_ALL_PATH
 
 
 def main() -> None:

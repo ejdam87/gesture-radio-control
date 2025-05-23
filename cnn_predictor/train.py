@@ -1,3 +1,4 @@
+""" Training CNN model """
 import torch
 import pandas as pd
 from torch import nn
@@ -11,12 +12,15 @@ from utils.persistency import save_model
 from utils.constants import LABELS_ALL_PATH
 
 from cnn_predictor.dataset import ImageDataset
-from cnn_predictor.models import GestureCNN, ResNet18, Classifier, EfficientNet, CustomExtractor
+from cnn_predictor.models import GestureCNN, Classifier, CustomExtractor, ResNet18
 from cnn_predictor.norm_stats import compute_norm_stats
 
 import sys
 import json
 from pathlib import Path
+
+
+GRAYSALE = False # whether to train grayscale or rgb model
 
 
 def perform_training(images_df: pd.DataFrame, out_path: str) -> None:
@@ -26,7 +30,7 @@ def perform_training(images_df: pd.DataFrame, out_path: str) -> None:
 
     # --- Hyper-params
     batch_size = 16
-    epochs = 80
+    epochs = 5
     lr = 0.001
     # ---
 
@@ -81,7 +85,7 @@ def perform_training(images_df: pd.DataFrame, out_path: str) -> None:
     # ---
 
     # --- Training
-    model = GestureCNN( CustomExtractor(1), Classifier(128, 14) ).to(dev)
+    model = GestureCNN( CustomExtractor(1) if GRAYSALE else ResNet18(), Classifier(128 if GRAYSALE else 512, 14) ).to(dev)
 
     loss_fn = nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)

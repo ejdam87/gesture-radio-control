@@ -1,6 +1,5 @@
-from cnn_predictor.models import Classifier, ResNet18, GestureCNN
+from cnn_predictor.inference import cnn_model
 from cnn_predictor.dataset import ImageDataset
-from utils.persistency import load_model
 from utils.training import test_loop
 
 import torch
@@ -14,9 +13,7 @@ import sys
 
 def test_model(model_path: str, stats_path: str, data_path: str) -> None:
     dev = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-    model = GestureCNN(ResNet18(), Classifier(14))
-    load_model(model, model_path)
-    model.to(dev)
+    model = cnn_model(model_path, device=dev)
 
     with open(stats_path, "r") as f:
         stats = json.load(f)
