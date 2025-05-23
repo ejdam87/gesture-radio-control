@@ -1,3 +1,4 @@
+""" ESP32 <-> Laptop image transmission. """
 import os
 from pathlib import Path
 
